@@ -89,13 +89,19 @@ class Image:
 				# Equalize with Histograms for each channel (B, G, R)
 				equalizedChannels = [cv2.equalizeHist(channel) for channel in channels]
 
-				# Merge the channels into the image
+				# Merge the RGB channels into the image
 				self.image = cv2.merge(equalizedChannels)
 			print("Image equalized.")
 		else:
 			print("No image to equalize.")
+	
+	def toGrayScale(self):
+		""" Turns the image from RGB to Grayscale """
+		if self.image is not None and len(self.image.shape) == 3:
+			self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+			print("Image turned to gray scale")
 
-	def apply_filter(self, filterType):
+	def applyFilter(self, filterType):
 		""" Apply a filter to the image (blur, edge, sharpen, etc.) """
 		if self.image is not None:
 			if filterType == "BLUR":
@@ -122,6 +128,42 @@ class Image:
 		else:
 			print("No image to apply filter to")
 	
+	def padKernel(self, kernel):
+		""" Called in wienerDeconvolution() to return
+			a kernel the size of the image """
+		padded_kernel = np.zeros(self.image.shape)
+		kh, kw = kernel.shape
+		center_h = (self.image.shape[0] - kh) // 2
+		center_w = (self.image.shape[1] - kw) // 2
+		padded_kernel[center_h:center_h + kh, center_w:center_w + kw] = kernel
+		return padded_kernel
+
+	def wienerDeconvolution(self, K=0.01):
+		""" Applies Wiener Deconvolution to remove blur for grayscale images
+		:param K: Noise factor (controls the removing of the noise)
+		F(u,v)= H*(u,v) / (|H(u,v)|^2 + K) * G(u,v)
+		"""
+		if len(self.image.shape) != 2:
+			print("Image is not grayscale!")
+			return
+
+		img_fft = np.fft.fft2(self.image)
+
+		kernel = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9
+		kernel = self.padKernel(kernel)
+		kernelFFT = np.fft.fft2(kernel, s=self.image.shape)
+
+		# Hermitian matrix
+		kernelFFTConj = np.conjugate(kernelFFT)
+		deconvolvedFFT = (kernelFFTConj / (np.abs(kernelFFT) ** 2 + K)) * img_fft
+		deconvolved = np.fft.ifft2(deconvolvedFFT)
+		deconvolved = np.abs(deconvolved)
+		
+		# Normalize the image
+		deconvolved = (deconvolved - np.min(deconvolved)) / (np.max(deconvolved) - np.min(deconvolved)) * 255
+		self.image = deconvolved.astype(np.uint8)
+		print("Unblurred the image")
+	
 	def adjustBrightnessContrast(self, brightness=0, contrast=1.0):
 		""" Adjust brightness and contrast. Brightness (0-100), contrast (1.0-3.0) """
 		if self.image is not None:
@@ -137,55 +179,84 @@ class Image:
 			print(f"Image saved as '{outputFilename}'.")
 		else:
 			print("No image to save.")
+	
+	def blend(self):
+		filename2 = input("Enter filename to be merged: ").strip()
+		try:
+			image2 = cv2.imread(filename2)
+			if self.image is None:
+				raise FileNotFoundError(f"Image '{filename2}' not found or file is not a valid image.")
+			print(f"Image to be blended '{filename2}' loaded successfully. Size: {self.image.shape[1]}x{self.image.shape[0]}")
+		except FileNotFoundError as e:
+			print(e)
+			exit(1)
+		except Exception as e:
+			print(f"Error loading image: {e}")
+			exit(1)
 
+		alpha, beta = map(float, input("Enter alpha (0.0, 1.0), beta(0.0, 1.0), (alpha + beta = 1.0): ").split())
+		self.image = cv2.addWeighted(self.image, alpha, image2, beta, 0.0)
+		print(f"Blended the two images")
 
 def main():
-	if len(sys.argv) != 2:
+	if len(sys.argv) < 2:
 		print("Usage: python3 main.py <filename>")
 		exit(1)
-	
+
 	filename = sys.argv[1]
-	image_instance = Image(filename)
-	
+	image = Image(filename)
+
 	while True:
-		print("\nAvailable commands: CROP, EQUALIZE, ROTATE, APPLY, FLIP, BRIGHTNESS, CONTRAST, SAVE, EXIT")
+		print("\nAvailable commands:\nCROP, EQUALIZE, ROTATE, APPLY, UNBLUR, GRAYSCALE, FLIP, BRIGHTNESS, CONTRAST, SHOW, SAVE, EXIT, BLEND")
 		command = input("Enter command: ").strip().upper()
 		
 		if command == "CROP":
 			x1, y1, x2, y2 = map(int, input("Enter coordinates (x1, y1, x2, y2): ").split())
-			image_instance.crop(x1, y1, x2, y2)
+			image.crop(x1, y1, x2, y2)
 		
 		elif command == "EQUALIZE":
-			image_instance.equalize()
+			image.equalize()
 		
 		elif command == "ROTATE":
 			angle = int(input("Enter angle to rotate: "))
-			image_instance.rotate(angle)
+			image.rotate(angle)
 		
 		elif command == "APPLY":
 			filter_type = input("Enter filter (BLUR, SHARPEN, EDGE): ").strip().upper()
-			image_instance.apply_filter(filter_type)
+			image.applyFilter(filter_type)
 		
+		elif command == "UNBLUR":
+			image.wienerDeconvolution()
+
+		elif command == "GRAYSCALE":
+			image.toGrayScale()
+
 		elif command == "BRIGHTNESS":
 			brightness = int(input("Enter brightness value (-100 to 100): "))
-			image_instance.adjustBrightnessContrast(brightness=brightness)
+			image.adjustBrightnessContrast(brightness=brightness)
 
 		elif command == "CONTRAST":
 			contrast = float(input("Enter contrast value (0.5 to 3.0): "))
-			image_instance.adjustBrightnessContrast(contrast=contrast)
+			image.adjustBrightnessContrast(contrast=contrast)
 		
 		elif command == "FLIP":
 			direction = int(input("Enter flip direction (0=vertical, 1=horizontal, -1=both): "))
-			image_instance.flip(direction)
+			image.flip(direction)
+		
+		elif command == "SHOW":
+			image.show()
 		
 		elif command == "SAVE":
-			output_filename = input("Enter filename to save: ")
-			image_instance.save(output_filename)
+			outputFilename = input("Enter filename to save: ")
+			image.save(outputFilename)
 		
 		elif command == "EXIT":
 			print("Exiting the application.")
 			break
-		
+
+		elif command == "BLEND":
+			image.blend()
+
 		else:
 			print("Invalid command. Please try again.")
 
