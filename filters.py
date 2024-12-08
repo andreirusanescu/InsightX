@@ -7,9 +7,12 @@ def apply_filter(self, filterType):
 		if filterType == "BLUR":
 			""" the bigger the kernel size, the blurrier the image
 				the bigger sigmaX, the blurrier the image """
-			self.image = cv2.GaussianBlur(self.image, (5, 5), 1.0)
+			kernel_size = int(input("Enter kernel size: "))
+			sigmaX = float(input("Enter standard deviation for X: "))
+			self.image = cv2.GaussianBlur(self.image, ksize=(kernel_size, kernel_size), sigmaX=sigmaX)
 		elif filterType == "MEDIAN_BLUR":
-			self.image = cv2.medianBlur(self.image, (5, 5))
+			kernel_size = int(input("Enter kernel size: "))
+			self.image = cv2.medianBlur(self.image, ksize=(kernel_size, kernel_size))
 		elif filterType == "SHARPEN":
 			kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
 			# ddepth -1, auto, keeps the same pixel intensity as the input
