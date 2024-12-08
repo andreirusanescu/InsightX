@@ -77,9 +77,11 @@ def main():
 		elif command == "BLEND":
 			image.blend()
 
+		# TODO: Anca, add more features
+		
+
 		else:
 			print("Invalid command. Please try again.")
-
 
 if __name__ == "__main__":
 	main()
