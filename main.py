@@ -12,8 +12,9 @@ def main():
 	while True:
 		print("\nAvailable commands:")
 		print("ADJUST commands: CROP, ROTATE, FLIP, RESIZE, BRIGHTNESS, CONTRAST")
-		print("FILTER commands: APPLY, GRAYSCALE, EQUALIZE")
+		print("FILTER commands: APPLY, GRAYSCALE, EQUALIZE, UNBLUR")
 		print("UTILS commands: SHOW, SAVE, EXIT")
+		print("ADVANCED: BLEND, ...")
 
 		# TODO add the other commands 
 		command = input("Enter command: ").strip().upper()
@@ -56,7 +57,7 @@ def main():
 			image.equalize()
 		
 		elif command == "UNBLUR":
-			image.wiener_deconvolution()
+			image.unblur()
 		
 		# UTILS:
 

@@ -34,42 +34,6 @@ class Image:
 			return f"Image '{self.filename}' with size {width}x{height} and {channels} channels."
 		else:
 			return "No image loaded."
-
-	def pad_kernel(self):
-		""" Called in wiener_deconvolution() to return
-			a kernel the size of the image """
-		kernel = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]) / 9
-		padded_kernel = np.zeros(self.image.shape)
-		kh, kw = kernel.shape
-		center_h = (self.image.shape[0] - kh) // 2
-		center_w = (self.image.shape[1] - kw) // 2
-		padded_kernel[center_h:center_h + kh, center_w:center_w + kw] = kernel
-		return padded_kernel
-
-	def wiener_deconvolution(self, K=0.01):
-		""" Applies Wiener Deconvolution to remove blur for grayscale images
-		:param K: Noise factor (controls the removing of the noise)
-		F(u,v)= H*(u,v) / (|H(u,v)|^2 + K) * G(u,v)
-		"""
-		if len(self.image.shape) != 2:
-			print("Image is not grayscale!")
-			return
-
-		img_FFT = np.fft.fft2(self.image)
-
-		kernel = self.pad_kernel()
-		kernel_FFT = np.fft.fft2(kernel, s=self.image.shape)
-
-		# Hermitian matrix
-		kernel_FFT_conj = np.conjugate(kernel_FFT)
-		deconvolvedFFT = (kernel_FFT_conj / (np.abs(kernel_FFT) ** 2 + K)) * img_FFT
-		deconvolved = np.fft.ifft2(deconvolvedFFT)
-		deconvolved = np.abs(deconvolved)
-		
-		# Normalize the image
-		deconvolved = (deconvolved - np.min(deconvolved)) / (np.max(deconvolved) - np.min(deconvolved)) * 255
-		self.image = deconvolved.astype(np.uint8)
-		print("Unblurred the image")
 	
 	def blend(self):
 		filename2 = input("Enter filename to be merged: ").strip()
