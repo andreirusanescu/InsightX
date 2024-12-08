@@ -4,7 +4,7 @@ from image_utils import attach_utils_to_image
 from filters import attach_filters_to_image
 from adjust import attach_adjust_to_image
 
-class Image:
+class MyImage:
 	def __init__(self, filename):
 		"""
 		Initializes the Image by loading it into memory using OpenCV.
@@ -68,6 +68,6 @@ class Image:
 		self.image = cv2.addWeighted(self.image, alpha, image2, beta, 0.0)
 		print(f"Blended the two images")
 
-attach_utils_to_image(Image)
-attach_filters_to_image(Image)
-attach_adjust_to_image(Image)
+attach_utils_to_image(MyImage)
+attach_filters_to_image(MyImage)
+attach_adjust_to_image(MyImage)
