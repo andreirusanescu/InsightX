@@ -3,6 +3,7 @@ import numpy as np
 from image_utils import attach_utils_to_image
 from filters import attach_filters_to_image
 from adjust import attach_adjust_to_image
+from sift import attach_sift_to_image
 
 class MyImage:
 	def __init__(self, filename):
@@ -71,3 +72,4 @@ class MyImage:
 attach_utils_to_image(MyImage)
 attach_filters_to_image(MyImage)
 attach_adjust_to_image(MyImage)
+attach_sift_to_image(MyImage)

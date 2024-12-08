@@ -62,6 +62,9 @@ def main():
 		# Machine-Learning algorithms
 		# SIFT (scale (zoom in/out), rotation, illumination, perspective)
 
+		elif command == "SIFT":
+			image.sift()
+
 
 		# UTILS:
 
