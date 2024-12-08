@@ -1,5 +1,5 @@
 import sys
-from image import Image
+from image import MyImage
 
 def main():
 	if len(sys.argv) < 2:
@@ -7,7 +7,7 @@ def main():
 		exit(1)
 
 	filename = sys.argv[1]
-	image = Image(filename)
+	image = MyImage(filename)
 
 	while True:
 		print("\nAvailable commands:")
@@ -58,7 +58,11 @@ def main():
 		
 		elif command == "UNBLUR":
 			image.unblur()
-		
+
+		# Machine-Learning algorithms
+		# SIFT (scale (zoom in/out), rotation, illumination, perspective)
+
+
 		# UTILS:
 
 		elif command == "SHOW":
@@ -78,7 +82,6 @@ def main():
 			image.blend()
 
 		# TODO: Anca, add more features
-		
 
 		else:
 			print("Invalid command. Please try again.")
