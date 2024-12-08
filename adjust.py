@@ -42,12 +42,12 @@ def resize(self):
 	print(f"Image resized to {self.image.shape[1]}x{self.image.shape[0]}")
 
 def adjust_brightnes_contrast(self, brightness=0, contrast=1.0):
-		""" Adjust brightness and contrast. Brightness (0-100), contrast (1.0-3.0) """
-		if self.image is not None:
-			self.image = cv2.convertScaleAbs(self.image, alpha=contrast, beta=brightness)
-			print(f"Brightness set to {brightness}, contrast set to {contrast}.")
-		else:
-			print("No image to adjust.")
+	""" Adjust brightness and contrast. Brightness (0-100), contrast (1.0-3.0) """
+	if self.image is not None:
+		self.image = cv2.convertScaleAbs(self.image, alpha=contrast, beta=brightness)
+		print(f"Brightness set to {brightness}, contrast set to {contrast}.")
+	else:
+		print("No image to adjust.")
 
 def attach_adjust_to_image(image_class):
 	"""
