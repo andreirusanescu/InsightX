@@ -1,69 +1,79 @@
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageEnhance
 from streamlit_cropper import st_cropper
 import os
-import cv2
 import numpy as np
 from io import BytesIO
+from image import MyImage
+import cv2
 
 # Menu and state management
 menu = st.sidebar.selectbox("Menu", ["Edit image", "About", "Contact"])
 
 if "active_section" not in st.session_state:
     st.session_state.active_section = "Edit image"
-if "crop_finished" not in st.session_state:
-    st.session_state.crop_finished = False
-if "rotated_image" not in st.session_state:
-    st.session_state.rotated_image = None
-if "cropped_image" not in st.session_state:
-    st.session_state.cropped_image = None
-if "original_image" not in st.session_state:
-    st.session_state.original_image = None
 if "operation" not in st.session_state:
-    st.session_state.operation = None  # Track the current operation
+    st.session_state.operation = None
+if "processed_image" not in st.session_state:
+    # To store results of each operation
+    st.session_state.processed_image = None
 
 def switch_section(section_name):
     st.session_state.active_section = section_name
 
-# Function to rotate image
+# Utility functions
 def rotate_image(image, angle):
-    # Rotate the image by the given angle
-    rotated_image = image.rotate(angle, expand=True)  # `expand=True` ensures the image size adjusts
-    return rotated_image
+    return image.rotate(angle, expand=True)
+
+def flip_image(image, direction):
+    if direction == "Horizontal":
+        return image.transpose(Image.FLIP_LEFT_RIGHT)
+    elif direction == "Vertical":
+        return image.transpose(Image.FLIP_TOP_BOTTOM)
+
+def resize_image(image, width, height):
+    return image.resize((width, height))
+
+def adjust_brightness(image, factor):
+    enhancer = ImageEnhance.Brightness(image)
+    return enhancer.enhance(factor)
+
+def adjust_contrast(image, factor):
+    enhancer = ImageEnhance.Contrast(image)
+    return enhancer.enhance(factor)
 
 if menu == "Edit image":
     st.title("Upload an image")
-    st.write("Upload the desired image for processing!")
     filename = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
     if filename:
         pil_image = Image.open(filename)
-        image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-        st.image(image, caption="Uploaded Image", channels="BGR")
+        st.image(pil_image, caption="Uploaded Image")
+        st.session_state.original_image = pil_image
 
-        save_path = os.path.join("uploads", filename.name)
+        save_dir = "uploads"
+        os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
 
-        if not os.path.exists("uploads"):
-            os.makedirs("uploads")
-
-        with open(save_path, "wb") as f:
+        # Save the file
+        file_path = os.path.join(save_dir, filename.name)
+        with open(file_path, "wb") as f:
             f.write(filename.getbuffer())
-        st.session_state["original_image"] = pil_image  # Save the original image in session state
+
+        # Get the absolute path
+        absolute_path = os.path.abspath(file_path)
+        myImage = MyImage(file_path)
     else:
         st.warning("Please upload an image to start editing.")
         st.stop()
 
     st.write("### Select an Edit Option:")
 
-    col1, col2, col3, col4 = st.columns(4)
-
+    col1, col2, col3 = st.columns(3)
     if col1.button("Adjust"):
         switch_section("Adjust")
     if col2.button("Filter"):
         switch_section("Filter")
-    if col3.button("Utils"):
-        switch_section("Utils")
-    if col4.button("Advanced"):
+    if col3.button("Advanced"):
         switch_section("Advanced")
 
     if st.session_state.active_section == "Adjust":
@@ -73,76 +83,81 @@ if menu == "Edit image":
             st.session_state.operation = "crop"
         elif col2.button("Rotate"):
             st.session_state.operation = "rotate"
-        # Crop functionality
+        elif col3.button("Flip"):
+            st.session_state.operation = "flip"
+        elif col4.button("Resize"):
+            st.session_state.operation = "resize"
+        elif col5.button("Brightness"):
+            st.session_state.operation = "brightness"
+        elif col6.button("Contrast"):
+            st.session_state.operation = "contrast"
+
+        # Reset the processed image for new operation
+        st.session_state.processed_image = None
+
         if st.session_state.operation == "crop":
-            st.session_state.cropped_image = None
-            st.session_state.crop_finished = False
-            st.session_state.rotated_image = None
+            st.write("### Crop Image")
+            cropped_image = st_cropper(st.session_state.original_image)
+            st.image(cropped_image, caption="Cropped Image")
 
-        if st.session_state.operation == "crop" and not st.session_state.crop_finished:
-            if "original_image" in st.session_state and st.session_state.original_image is not None:
-                st.write("### Select cropped area")
-                cropped_image = st_cropper(
-                    st.session_state.original_image,
-                    aspect_ratio=None,
-                )
+            if st.button("Finish Cropping"):
+                st.session_state.processed_image = cropped_image
 
-                st.write("### Live Cropped Preview")
-                st.image(cropped_image, use_container_width=True)
-
-                if st.button("Finish Cropping"):
-                    st.session_state.cropped_image = cropped_image
-                    st.session_state.crop_finished = True
-
-        if st.session_state.crop_finished and st.session_state.cropped_image is not None:
-            st.write("### Final Cropped Image")
-            st.image(st.session_state.cropped_image, use_container_width=True)
-
-            buffer = BytesIO()
-            _, file_extension = os.path.splitext(filename.name)
-            file_extension = file_extension.lstrip(".")
-
-            st.session_state["cropped_image"].save(buffer, format=file_extension.upper())
-            buffer.seek(0)
-
-            st.download_button(
-                label="Download Cropped Image",
-                data=buffer,
-                file_name="cropped_image." + file_extension,
-                mime="image/" + file_extension,
-            )
-        
-        # Rotate functionality
-        if st.session_state.operation == "rotate":
-            st.session_state.cropped_image = None  # Reset crop content
-            st.session_state.crop_finished = False  # Reset crop status
-            st.session_state.rotated_image = None  # Clear any previous rotated image
-
+        elif st.session_state.operation == "rotate":
             st.write("### Rotate Image")
-            rotate_angle = st.slider(
-                "Select rotation angle (in degrees)",
-                min_value=0,
-                max_value=360,
-                value=0,
-                step=1
-            )
+            angle = st.slider("Rotation angle", 0, 360, 0)
+            
+            result = myImage.rotate(angle)
+            cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            rotated_image = Image.fromarray(cv2_image_rgb)
+            st.image(rotated_image, use_container_width=True)
 
-            if "cropped_image" in st.session_state and st.session_state["cropped_image"] is not None:
-                rotated_image = rotate_image(st.session_state["cropped_image"], rotate_angle)
-                st.session_state.rotated_image = rotated_image
-            else:
-                rotated_image = rotate_image(pil_image, rotate_angle)
-                st.session_state.rotated_image = rotated_image
+            if st.button("Apply Rotation"):
+                st.session_state.processed_image = rotated_image
 
-            # Display rotated image preview
-            st.write("### Rotated Image Preview")
-            st.image(st.session_state.rotated_image, use_container_width=True)
+        elif st.session_state.operation == "flip":
+            st.write("### Flip Image")
+            flip_direction = st.selectbox("Select direction", ["Horizontal", "Vertical"])
+            flipped_image = flip_image(st.session_state.original_image, flip_direction)
+            st.image(flipped_image, caption="Flipped Image")
 
-            # Provide a download button for the rotated image
+            if st.button("Apply Flip"):
+                st.session_state.processed_image = flipped_image
+
+        elif st.session_state.operation == "resize":
+            st.write("### Resize Image")
+            width = st.number_input("Width", min_value=1, value=st.session_state.original_image.width)
+            height = st.number_input("Height", min_value=1, value=st.session_state.original_image.height)
+            resized_image = resize_image(st.session_state.original_image, int(width), int(height))
+            st.image(resized_image, caption="Resized Image")
+
+            if st.button("Apply Resize"):
+                st.session_state.processed_image = resized_image
+
+        elif st.session_state.operation == "brightness":
+            st.write("### Adjust Brightness")
+            brightness_factor = st.slider("Brightness factor", 0.1, 3.0, 1.0)
+            brightened_image = adjust_brightness(st.session_state.original_image, brightness_factor)
+            st.image(brightened_image, caption="Brightened Image")
+
+            if st.button("Apply Brightness"):
+                st.session_state.processed_image = brightened_image
+
+        elif st.session_state.operation == "contrast":
+            st.write("### Adjust Contrast")
+            contrast_factor = st.slider("Contrast factor", 0.1, 3.0, 1.0)
+            contrasted_image = adjust_contrast(st.session_state.original_image, contrast_factor)
+            st.image(contrasted_image, caption="Contrasted Image")
+
+            if st.button("Apply Contrast"):
+                st.session_state.processed_image = contrasted_image
+
+        # Provide a download button for the processed image
+        if st.session_state.processed_image:
             buffer = BytesIO()
             _, file_extension = os.path.splitext(filename.name)
             file_extension = file_extension.lstrip(".")
-            st.session_state.rotated_image.save(buffer, format=file_extension.upper())
+            st.session_state.processed_image.save(buffer, format="PNG")
             buffer.seek(0)
 
             st.download_button(
@@ -151,7 +166,60 @@ if menu == "Edit image":
                 file_name="rotated_image." + file_extension,
                 mime="image/" + file_extension,
             )
+    elif st.session_state.active_section == "Filter":
+        col1, col2, col3, col4 = st.columns(4)
+        if col1.button("Apply filters"):
+            st.session_state.operation = "apply filters"
+        elif col2.button("Grayscale"):
+            st.session_state.operation = "grayscale"
+        elif col3.button("Equalize"):
+            st.session_state.operation = "equalize"
+        elif col4.button("Unblur"):
+            st.session_state.operation = "unblur"
+        
+        st.session_state.processed_image = None
 
+        if st.session_state.operation == "apply filters":
+            col1, col2, col3, col4 = st.columns(4)
+            if col1.button("Blur"):
+                st.session_state.operation = "blur"
+            elif col2.button("Median Blur"):
+                st.session_state.operation = "median blur"
+            elif col3.button("Sharpen"):
+                st.session_state.operation = "sharpen"
+            elif col4.button("Edge"):
+                st.session_state.operation = "edge"
+
+            result = myImage.apply_filter(st.session_state.operation.upper())
+            cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            filtered_image = Image.fromarray(cv2_image_rgb)
+            st.image(filtered_image, use_container_width=True)
+
+            st.session_state.processed_image = filtered_image
+        elif st.session_state.operation == "grayscale":
+            result = myImage.gray_scale()
+            cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            grayscale_image = Image.fromarray(cv2_image_rgb)
+            st.image(grayscale_image, use_container_width=True)
+
+            st.session_state.processed_image = grayscale_image
+
+
+        if st.session_state.processed_image:
+            buffer = BytesIO()
+            _, file_extension = os.path.splitext(filename.name)
+            file_extension = file_extension.lstrip(".")
+            st.session_state.processed_image.save(buffer, format="PNG")
+            buffer.seek(0)
+
+            st.download_button(
+                label="Download Rotated Image",
+                data=buffer,
+                file_name="rotated_image." + file_extension,
+                mime="image/" + file_extension,
+            )
+            
+    
 
 elif menu == "About":
     st.title("About Us")
