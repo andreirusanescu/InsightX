@@ -14,7 +14,7 @@ def main():
 		print("ADJUST commands: CROP, ROTATE, FLIP, RESIZE, BRIGHTNESS, CONTRAST")
 		print("FILTER commands: APPLY, GRAYSCALE, EQUALIZE, UNBLUR")
 		print("UTILS commands: SHOW, SAVE, EXIT")
-		print("ADVANCED: BLEND, ...")
+		print("ADVANCED: BLEND, SIFT, PALM, DETECT_FACES, ...")
 
 		# TODO add the other commands 
 		command = input("Enter command: ").strip().upper()
@@ -65,6 +65,14 @@ def main():
 		elif command == "SIFT":
 			image.sift()
 
+		elif command == "RANSAC":
+			image.ransac()
+
+		elif command == "PALM":
+			image.find_palm_lines()
+		
+		elif command == "DETECT_FACES":
+			image.detect_face()
 
 		# UTILS:
 
