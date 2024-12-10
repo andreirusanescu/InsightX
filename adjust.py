@@ -20,10 +20,8 @@ def rotate(self, angle):
 		rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1)
 
 		# Apply the rotation matrix to the image by an affine transformation
-		self.image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
-		print(f"Image rotated by {angle} degrees.")
-	else:
-		print("No image to rotate.")
+		rotated_image = cv2.warpAffine(self.image, rotation_matrix, (width, height))
+		return rotated_image
 
 def flip(self, direction):
 	""" Flip the image (0 = vertical, 1 = horizontal, -1 = both) """

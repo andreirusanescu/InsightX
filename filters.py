@@ -1,19 +1,16 @@
 import cv2
 import numpy as np
 
-def apply_filter(self, filterType):
+def apply_filter(self, filterType, kernel_size, sigmaX):
 	""" Apply a filter to the image (blur, median_blur, edge, sharpen, etc.) """
 	result = None
 	if self.image is not None:
 		if filterType == "BLUR":
 			""" the bigger the kernel size, the blurrier the image
 				the bigger sigmaX, the blurrier the image """
-			kernel_size = int(input("Enter kernel size: "))
-			sigmaX = float(input("Enter standard deviation for X: "))
 			result = cv2.GaussianBlur(self.image, ksize=(kernel_size, kernel_size), sigmaX=sigmaX)
 		elif filterType == "MEDIAN BLUR":
-			kernel_size = int(input("Enter kernel size: "))
-			result = cv2.medianBlur(self.image, ksize=(kernel_size, kernel_size))
+			result = cv2.medianBlur(self.image, ksize=kernel_size)
 		elif filterType == "SHARPEN":
 			kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
 			# ddepth -1, auto, keeps the same pixel intensity as the input

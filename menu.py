@@ -17,6 +17,8 @@ if "operation" not in st.session_state:
 if "processed_image" not in st.session_state:
     # To store results of each operation
     st.session_state.processed_image = None
+if "operation_type" not in st.session_state:
+    st.session_state.operation_type = None
 
 def switch_section(section_name):
     st.session_state.active_section = section_name
@@ -161,9 +163,9 @@ if menu == "Edit image":
             buffer.seek(0)
 
             st.download_button(
-                label="Download Rotated Image",
+                label="Download Image",
                 data=buffer,
-                file_name="rotated_image." + file_extension,
+                file_name=filename.name,
                 mime="image/" + file_extension,
             )
     elif st.session_state.active_section == "Filter":
@@ -182,29 +184,82 @@ if menu == "Edit image":
         if st.session_state.operation == "apply filters":
             col1, col2, col3, col4 = st.columns(4)
             if col1.button("Blur"):
-                st.session_state.operation = "blur"
+                st.session_state.operation_type = "blur"
             elif col2.button("Median Blur"):
-                st.session_state.operation = "median blur"
+                st.session_state.operation_type = "median blur"
             elif col3.button("Sharpen"):
-                st.session_state.operation = "sharpen"
+                st.session_state.operation_type = "sharpen"
             elif col4.button("Edge"):
-                st.session_state.operation = "edge"
+                st.session_state.operation_type = "edge"
 
-            result = myImage.apply_filter(st.session_state.operation.upper())
-            cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-            filtered_image = Image.fromarray(cv2_image_rgb)
-            st.image(filtered_image, use_container_width=True)
+            if st.session_state.operation_type == "blur":
+                kernel_size = st.slider("Kernel size", 1, 50, step=2)
+                result = myImage.apply_filter("BLUR", kernel_size, 1)
+                cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                # if len(result.shape) == 3:
+                #     cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                # else:
+                #     cv2_image_rgb = result
+                filtered_image = Image.fromarray(cv2_image_rgb)
+                st.image(result, use_container_width=True)
 
-            st.session_state.processed_image = filtered_image
+                st.session_state.processed_image = filtered_image
+            if st.session_state.operation_type == "median blur":
+                kernel_size = st.slider("Kernel size", 1, 50, step=2)
+                result = myImage.apply_filter("MEDIAN BLUR", kernel_size, 0)
+                if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                else:
+                    cv2_image_rgb = result
+                filtered_image = Image.fromarray(cv2_image_rgb)
+                st.image(result, use_container_width=True)
+
+                st.session_state.processed_image = filtered_image
+            if st.session_state.operation_type == "sharpen":
+                result = myImage.apply_filter("SHARPEN", 0, 0)
+                if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                else:
+                    cv2_image_rgb = result
+                filtered_image = Image.fromarray(cv2_image_rgb)
+                st.image(result, use_container_width=True)
+
+                st.session_state.processed_image = filtered_image
+            if st.session_state.operation_type == "edge":
+                result = myImage.apply_filter("EDGE", 0, 0)
+                if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                else:
+                    cv2_image_rgb = result
+                filtered_image = Image.fromarray(cv2_image_rgb)
+                st.image(result, use_container_width=True)
+
+                st.session_state.processed_image = filtered_image
         elif st.session_state.operation == "grayscale":
             result = myImage.gray_scale()
-            cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            else:
+                cv2_image_rgb = result
             grayscale_image = Image.fromarray(cv2_image_rgb)
             st.image(grayscale_image, use_container_width=True)
 
             st.session_state.processed_image = grayscale_image
+        elif st.session_state.operation == "equalize":
+            result = myImage.equalize()
+            equalize_image = Image.fromarray(result)
+            st.image(equalize_image, use_container_width=True)
+            st.session_state.processed_image = equalize_image
+        elif st.session_state.operation == "unblur":
+            result = myImage.wiener_deconvolution()
+            if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+            else:
+                cv2_image_rgb = result
+            unblur_image = Image.fromarray(cv2_image_rgb)
+            st.image(unblur_image, use_container_width=True)
 
-
+            st.session_state.processed_image = unblur_image
         if st.session_state.processed_image:
             buffer = BytesIO()
             _, file_extension = os.path.splitext(filename.name)
@@ -213,9 +268,9 @@ if menu == "Edit image":
             buffer.seek(0)
 
             st.download_button(
-                label="Download Rotated Image",
+                label="Download Image",
                 data=buffer,
-                file_name="rotated_image." + file_extension,
+                file_name=filename.name,
                 mime="image/" + file_extension,
             )
             
