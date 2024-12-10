@@ -79,8 +79,8 @@ def main():
 			print("Exiting the application.")
 			break
 
-		# OTHER:
 
+		# OTHER:
 		elif command == "BLEND":
 			image.blend()
 
