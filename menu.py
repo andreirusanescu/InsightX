@@ -194,14 +194,14 @@ if menu == "Edit image":
 
             if st.session_state.operation_type == "blur":
                 kernel_size = st.slider("Kernel size", 1, 50, step=2)
-                result = myImage.apply_filter("BLUR", kernel_size, 1)
-                cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-                # if len(result.shape) == 3:
-                #     cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-                # else:
-                #     cv2_image_rgb = result
+                sigmaX = st.slider("Standard deviation for X", 1, 50, step=2)
+                result = myImage.apply_filter("BLUR", kernel_size, sigmaX)
+                if len(result.shape) == 3:
+                    cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                else:
+                    cv2_image_rgb = result
                 filtered_image = Image.fromarray(cv2_image_rgb)
-                st.image(result, use_container_width=True)
+                st.image(filtered_image, use_container_width=True)
 
                 st.session_state.processed_image = filtered_image
             if st.session_state.operation_type == "median blur":
@@ -212,7 +212,7 @@ if menu == "Edit image":
                 else:
                     cv2_image_rgb = result
                 filtered_image = Image.fromarray(cv2_image_rgb)
-                st.image(result, use_container_width=True)
+                st.image(filtered_image, use_container_width=True)
 
                 st.session_state.processed_image = filtered_image
             if st.session_state.operation_type == "sharpen":
@@ -222,7 +222,7 @@ if menu == "Edit image":
                 else:
                     cv2_image_rgb = result
                 filtered_image = Image.fromarray(cv2_image_rgb)
-                st.image(result, use_container_width=True)
+                st.image(filtered_image, use_container_width=True)
 
                 st.session_state.processed_image = filtered_image
             if st.session_state.operation_type == "edge":
@@ -232,7 +232,7 @@ if menu == "Edit image":
                 else:
                     cv2_image_rgb = result
                 filtered_image = Image.fromarray(cv2_image_rgb)
-                st.image(result, use_container_width=True)
+                st.image(filtered_image, use_container_width=True)
 
                 st.session_state.processed_image = filtered_image
         elif st.session_state.operation == "grayscale":
@@ -251,7 +251,7 @@ if menu == "Edit image":
             st.image(equalize_image, use_container_width=True)
             st.session_state.processed_image = equalize_image
         elif st.session_state.operation == "unblur":
-            result = myImage.wiener_deconvolution()
+            result = myImage.unblur()
             if len(result.shape) == 3:
                     cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
             else:
