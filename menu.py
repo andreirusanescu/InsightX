@@ -370,8 +370,10 @@ elif menu == "Advanced ML":
 				f.write(filename2.getbuffer())
 			myImage2 = MyImage(file_path2)
 
-			myImage1.ransac(myImage1.image, myImage2.image, "ransac.jpeg")
-			result = Image.open("ransac.jpeg")
+			_, file_extension = os.path.splitext(filename.name)
+			file_extension = file_extension.lstrip(".")
+			myImage1.ransac(myImage1.image, myImage2.image, "ransac." + file_extension)
+			result = Image.open("ransac." + file_extension)
 			st.image(result, caption="Ransac image (auto-save)")
 			st.session_state.processed_image = result
 
@@ -380,7 +382,7 @@ elif menu == "Advanced ML":
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
 				file_extension = file_extension.lstrip(".")
-				st.session_state.processed_image.save(buffer, format="JPEG")
+				st.session_state.processed_image.save(buffer, format=file_extension.upper())
 				buffer.seek(0)
 
 				st.download_button(
