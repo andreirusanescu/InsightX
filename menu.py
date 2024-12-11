@@ -5,10 +5,12 @@ import os
 import numpy as np
 from io import BytesIO
 from image import MyImage
+from sift import sift
 import cv2
+import matplotlib
 
 # Menu and state management
-menu = st.sidebar.selectbox("Menu", ["Edit image", "About", "Contact"])
+menu = st.sidebar.selectbox("Menu", ["Edit image", "Advanced ML", "Blend"])
 
 if "active_section" not in st.session_state:
 	st.session_state.active_section = "Edit image"
@@ -19,9 +21,14 @@ if "processed_image" not in st.session_state:
 	st.session_state.processed_image = None
 if "operation_type" not in st.session_state:
 	st.session_state.operation_type = None
+if "file_uploaded" not in st.session_state:
+    st.session_state.file_uploaded = False
 
 def switch_section(section_name):
 	st.session_state.active_section = section_name
+
+def reset_uploader():
+    st.session_state.file_uploaded = False
 
 # Utility functions
 def rotate_image(image, angle):
@@ -46,8 +53,13 @@ def adjust_contrast(image, factor):
 
 if menu == "Edit image":
 	st.title("Upload an image")
-	filename = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-
+	if not st.session_state.file_uploaded:
+		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
+		if filename:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+	else:
+		reset_uploader()
 	if filename:
 		pil_image = Image.open(filename)
 		st.image(pil_image, caption="Uploaded Image")
@@ -70,13 +82,11 @@ if menu == "Edit image":
 
 	st.write("### Select an Edit Option:")
 
-	col1, col2, col3 = st.columns(3)
+	col1, col2 = st.columns(3)
 	if col1.button("Adjust"):
 		switch_section("Adjust")
 	if col2.button("Filter"):
 		switch_section("Filter")
-	if col3.button("Advanced"):
-		switch_section("Advanced")
 
 	if st.session_state.active_section == "Adjust":
 		col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -216,7 +226,7 @@ if menu == "Edit image":
 
 				st.session_state.processed_image = filtered_image
 			if st.session_state.operation_type == "sharpen":
-				intensity = st.slider("Intensity", 0, 3, step=1)
+				intensity = st.slider("Intensity", 0.0, 3.0, step=0.1)
 				denoise_strength = st.slider("Denoise strength", 0, 30, step=1)
 				result = myImage.apply_filter("SHARPEN", intensity=intensity, denoise_strength=denoise_strength)
 				if len(result.shape) == 3:
@@ -275,12 +285,168 @@ if menu == "Edit image":
 				file_name=filename.name,
 				mime="image/" + file_extension,
 			)
-			
-	
+elif menu == "Advanced ML":
+	st.title("Advanced Machine Learning Algorithms")
+	st.write("Choose an algorithm form the list:")
+	col1, col2, col3, col4 = st.columns(4)
 
-elif menu == "About":
-	st.title("About Us")
-	st.write("Information about this app.")
-elif menu == "Contact":
-	st.title("Contact Us")
-	st.write("Here's how you can reach us!")
+	if col1.button("SIFT"):
+		switch_section("sift")
+	elif col2.button("RANSAC"):
+		switch_section("ransac")
+	elif col3.button("Palm"):
+		switch_section("palm")
+	elif col4.button("Detect faces"):
+		switch_section("detect faces")
+
+	if st.session_state.active_section == "sift":
+		st.write("### Upload two images")
+		if st.session_state.file_uploaded:
+			reset_uploader()
+		filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
+		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
+		if filename and filename2:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+			pil_image1 = Image.open(filename)
+			st.image(pil_image1, caption="Uploaded Image 1")
+			st.session_state.original_image = pil_image1
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path1 = os.path.join(save_dir, filename.name)
+			with open(file_path1, "wb") as f:
+				f.write(filename.getbuffer())
+
+			pil_image2 = Image.open(filename2)
+			st.image(pil_image2, caption="Uploaded Image 2")
+			st.session_state.second_image = pil_image2
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path2 = os.path.join(save_dir, filename2.name)
+			with open(file_path2, "wb") as f:
+				f.write(filename2.getbuffer())
+
+			st.session_state.processed_image = None
+			nr_matches = st.slider("Number of matches", 0, 100, step=1)
+			sift(file_path1, file_path2, nr_matches, "sift_result.jpeg")
+			result = Image.open("sift_result.jpeg")
+			st.image(result, caption="SIFT image (auto-save)")
+		else:
+			st.warning("Please upload two valid images to start editing.")
+		
+	elif st.session_state.active_section == "ransac":
+		st.write("### Upload two images")
+		if st.session_state.file_uploaded:
+			reset_uploader()
+		filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
+		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
+		if filename and filename2:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+			pil_image1 = Image.open(filename)
+			st.image(pil_image1, caption="Uploaded Image 1")
+			st.session_state.original_image = pil_image1
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path1 = os.path.join(save_dir, filename.name)
+			with open(file_path1, "wb") as f:
+				f.write(filename.getbuffer())
+
+			pil_image2 = Image.open(filename2)
+			st.image(pil_image2, caption="Uploaded Image 2")
+			st.session_state.second_image = pil_image2
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path2 = os.path.join(save_dir, filename2.name)
+			with open(file_path2, "wb") as f:
+				f.write(filename2.getbuffer())
+
+			st.session_state.processed_image = None
+		else:	
+			st.warning("Please upload two valid images to start editing.")
+
+	elif st.session_state.active_section == "palm":
+
+		# Reset the processed image for new operation
+		st.session_state.processed_image = None
+	elif st.session_state.active_section == "detect faces":
+
+		# Reset the processed image for new operation
+		st.session_state.processed_image = None
+
+elif menu == "Blend":
+	st.title("Blend two images")
+	st.write("### Upload two images")
+	if not st.session_state.file_uploaded:
+		filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
+		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
+		if filename and filename2:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+			pil_image1 = Image.open(filename)
+			st.image(pil_image1, caption="Uploaded Image 1")
+			st.session_state.original_image = pil_image1
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path = os.path.join(save_dir, filename.name)
+			with open(file_path, "wb") as f:
+				f.write(filename.getbuffer())
+
+			myImage1 = MyImage(file_path)
+
+			pil_image2 = Image.open(filename2)
+			st.image(pil_image2, caption="Uploaded Image 2")
+			st.session_state.second_image = pil_image2
+
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path = os.path.join(save_dir, filename2.name)
+			with open(file_path, "wb") as f:
+				f.write(filename2.getbuffer())
+
+			st.session_state.processed_image = None
+			alpha = st.slider("Alpha", 0.0, 1.0, value=0.5, step=0.1)
+			if not (0.0 < alpha < 1.0) or round(alpha + 1.0 - alpha, 5) != 1.0:
+				st.warning("Alpha should be strictly between 0.0 and 1.0.")
+			else:
+				result = myImage1.blend(file_path, alpha, 1.0 - alpha)
+				result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+				blend_image = Image.fromarray(result_rgb)
+				st.image(blend_image, use_container_width=True)
+
+				st.session_state.processed_image = blend_image
+			if st.session_state.processed_image:
+				buffer = BytesIO()
+				_, file_extension = os.path.splitext(filename.name)
+				file_extension = file_extension.lstrip(".")
+				st.session_state.processed_image.save(buffer, format="JPEG")
+				buffer.seek(0)
+
+				st.download_button(
+					label="Download Image",
+					data=buffer,
+					file_name=filename.name,
+					mime="image/" + file_extension,
+				)
+	else:
+		reset_uploader()
+		st.warning("Please upload two valid images to start editing.")
+		st.stop()
+

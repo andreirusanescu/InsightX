@@ -36,8 +36,7 @@ class MyImage:
 		else:
 			return "No image loaded."
 	
-	def blend(self):
-		filename2 = input("Enter filename to be merged: ").strip()
+	def blend(self, filename2, alpha, beta):
 		try:
 			image2 = cv2.imread(filename2)
 			if self.image is None:
@@ -50,7 +49,7 @@ class MyImage:
 			print(f"Error loading image: {e}")
 			exit(1)
 
-		alpha, beta = map(float, input("Enter alpha (0.0, 1.0), beta (0.0, 1.0), (alpha + beta = 1.0): ").split())
+		# alpha, beta = map(float, input("Enter alpha (0.0, 1.0), beta (0.0, 1.0), (alpha + beta = 1.0): ").split())
 		if not (0.0 < alpha < 1.0) or not (0.0 < beta < 1.0) or round(alpha + beta, 5) != 1.0:
 			raise ValueError("Alpha and beta should be between 0.0 and 1.0, alpha + beta = 1.0")
 
@@ -63,11 +62,12 @@ class MyImage:
 			image2 = cv2.cvtColor(image2, cv2.COLOR_GRAY2BGR)
 
 		# Making sure they are the same type
-		self.image = self.image.astype('float32')
-		image2 = image2.astype('float32')
+		# self.image = self.image.astype('float32')
+		# image2 = image2.astype('float32')
 
-		self.image = cv2.addWeighted(self.image, alpha, image2, beta, 0.0)
+		result = cv2.addWeighted(self.image, alpha, image2, beta, 0.0)
 		print(f"Blended the two images")
+		return result
 
 attach_utils_to_image(MyImage)
 attach_filters_to_image(MyImage)

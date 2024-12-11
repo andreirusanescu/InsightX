@@ -132,9 +132,9 @@ def estimate_affine(s, t):
 	Y = theta[4:]
 	return X, Y
 
-def ransac_main(self):
-	filename1 = input("Enter first filename: ").strip()
-	filename2 = input("Enter second filename: ").strip()
+def ransac_main(filename1, filename2):
+	# filename1 = input("Enter first filename: ").strip()
+	# filename2 = input("Enter second filename: ").strip()
 
 	""" Source image is the image we want
 	to register over the target image """
@@ -157,9 +157,10 @@ def ransac_main(self):
 	# blending the images
 	merge = np.uint8(target_image * 0.5 + warp * 0.5)
 
-	cv2.imshow('img', merge)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+	# cv2.imshow('img', merge)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()
+	return merge
 
 def attach_ransac_to_image(image_class):
 	image_class.ransac = ransac_main
