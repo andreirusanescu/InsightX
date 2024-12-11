@@ -43,7 +43,6 @@ def main():
 			contrast = float(input("Enter contrast value (0.5 to 3.0): "))
 			image.adjust_brightnes_contrast(contrast=contrast)
 		
-		
 		# FILTERS
 
 		elif command == "APPLY":
@@ -52,9 +51,13 @@ def main():
 				kernel_size = int(input("Enter kernel size: "))
 				sigmaX = float(input("Enter standard deviation for X: "))
 				image.apply_filter(filter_type, kernel_size=kernel_size, sigmaX=sigmaX)
+			elif filter_type == "SHARPEN":
+				intensity = float(input("Enter intnsity of the sharpening (0-3): "))
+				denoise_strength = float(input("Enter denoise strength (0-30): "))
+				image.apply_filter(filter_type, intensity=intensity, denoise_strength=denoise_strength)
 			else:
 				image.apply_filter(filter_type)
-		
+
 		elif command == "GRAYSCALE":
 			image.gray_scale()
 
