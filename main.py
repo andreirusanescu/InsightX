@@ -14,7 +14,7 @@ def main():
 		print("ADJUST commands: CROP, ROTATE, FLIP, RESIZE, BRIGHTNESS, CONTRAST")
 		print("FILTER commands: APPLY, GRAYSCALE, EQUALIZE, UNBLUR")
 		print("UTILS commands: SHOW, SAVE, EXIT")
-		print("ADVANCED: BLEND, SIFT, PALM, DETECT_FACES, ...")
+		print("ADVANCED: BLEND, SIFT, PALM, DETECT_FACES, RECOGNIZE_FACES")
 
 		# TODO add the other commands 
 		command = input("Enter command: ").strip().upper()
@@ -69,6 +69,8 @@ def main():
 
 		# Machine-Learning algorithms
 		# SIFT (scale (zoom in/out), rotation, illumination, perspective)
+		elif command == "BLEND":
+			image.blend()
 
 		elif command == "SIFT":
 			image.sift()
@@ -82,8 +84,11 @@ def main():
 		elif command == "DETECT_FACES":
 			image.detect_face()
 
-		# UTILS:
+		elif command == "RECOGNIZE_FACES":
+			# folderpath = input("Enter folder path: ").strip
+			image.recognize_faces()
 
+		# UTILS:
 		elif command == "SHOW":
 			image.show()
 
@@ -94,13 +99,6 @@ def main():
 		elif command == "EXIT":
 			print("Exiting the application.")
 			break
-
-
-		# OTHER:
-		elif command == "BLEND":
-			image.blend()
-
-		# TODO: Anca, add more features
 
 		else:
 			print("Invalid command. Please try again.")
