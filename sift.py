@@ -13,18 +13,22 @@ def extract_sift_features(img):
 
 def showing_sift_features(img1, img2, key_points):
 	""" Draws the keypoints present in the image """
-	plt.imshow(cv2.drawKeypoints(img1, key_points, img2.copy()))
+	img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)  # Convert to RGB for display
+	plt.imshow(cv2.drawKeypoints(img1_rgb, key_points, img2.copy()))
 
-def sift(self):
-	x = input("Enter First Image Name: ").strip()
-	image1 = cv2.imread(x)
-	if image1 is None:
-		raise FileNotFoundError(f"Image '{x}' not found.")
+def sift(filename1, filename2, nr_matches, out_filename):
+	# x = input("Enter First Image Name: ").strip()
+	# image1 = cv2.imread(x)
+	# if image1 is None:
+	# 	raise FileNotFoundError(f"Image '{x}' not found.")
 
-	y = input("Enter Second Image Name: ").strip()
-	image2 = cv2.imread(y)
-	if image2 is None:
-		raise FileNotFoundError(f"Image '{y}' not found.")
+	# y = input("Enter Second Image Name: ").strip()
+	# image2 = cv2.imread(y)
+	# if image2 is None:
+	# 	raise FileNotFoundError(f"Image '{y}' not found.")
+
+	image1 = cv2.imread(filename1)
+	image2 = cv2.imread(filename2)
 
 	h1, w1 = image1.shape[:2]
 	h2, w2 = image2.shape[:2]
@@ -61,11 +65,12 @@ def sift(self):
 	# Save only the first 100 matches
 	matched_img = cv2.drawMatches(image1, image1_key_points, 
 								image2, image2_key_points, 
-								matches[:100], image2.copy())
+								matches[:nr_matches], image2.copy())
+	matched_img_rgb = cv2.cvtColor(matched_img, cv2.COLOR_BGR2RGB)
 
 	plt.figure(figsize=(30, 15))
-	plt.imshow(matched_img)
-	out_filename = input("Enter output filename: ").strip()
+	plt.imshow(matched_img_rgb)
+	# out_filename = input("Enter output filename: ").strip()
 	plt.savefig(out_filename)
 
 def attach_sift_to_image(image_class):
