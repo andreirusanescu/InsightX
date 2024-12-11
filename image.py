@@ -4,6 +4,8 @@ from image_utils import attach_utils_to_image
 from filters import attach_filters_to_image
 from adjust import attach_adjust_to_image
 from sift import attach_sift_to_image
+from palm import attach_palm_to_image
+from detect_faces import attach_face_to_image
 
 class MyImage:
 	def __init__(self, filename):
@@ -73,3 +75,5 @@ attach_utils_to_image(MyImage)
 attach_filters_to_image(MyImage)
 attach_adjust_to_image(MyImage)
 attach_sift_to_image(MyImage)
+attach_palm_to_image(MyImage)
+attach_face_to_image(MyImage)

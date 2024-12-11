@@ -16,7 +16,7 @@ def showing_sift_features(img1, img2, key_points):
 	img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)  # Convert to RGB for display
 	plt.imshow(cv2.drawKeypoints(img1_rgb, key_points, img2.copy()))
 
-def sift(filename1, filename2, nr_matches, out_filename):
+def sift(self, filename1, filename2, nr_matches, out_filename):
 	# x = input("Enter First Image Name: ").strip()
 	# image1 = cv2.imread(x)
 	# if image1 is None:
