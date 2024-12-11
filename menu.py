@@ -344,7 +344,6 @@ elif menu == "Advanced ML":
 		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
 		if filename and filename2:
 			st.session_state.file_uploaded = True
-			st.success("File uploaded successfully!")
 			pil_image1 = Image.open(filename)
 			st.image(pil_image1, caption="Uploaded Image 1")
 			st.session_state.original_image = pil_image1
@@ -356,8 +355,8 @@ elif menu == "Advanced ML":
 			file_path1 = os.path.join(save_dir, filename.name)
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
+			myImage1 = MyImage(file_path1)
 
-			myImage = MyImage(file_path1)
 			pil_image2 = Image.open(filename2)
 			st.image(pil_image2, caption="Uploaded Image 2")
 			st.session_state.second_image = pil_image2
@@ -369,6 +368,27 @@ elif menu == "Advanced ML":
 			file_path2 = os.path.join(save_dir, filename2.name)
 			with open(file_path2, "wb") as f:
 				f.write(filename2.getbuffer())
+			myImage2 = MyImage(file_path2)
+
+			myImage1.ransac(myImage1, myImage2, "ransac.jpeg")
+			result = Image.open("ransac.jpeg")
+			st.image(result, caption="Ransac image (auto-save)")
+			st.session_state.processed_image = result
+
+			# Provide a download button for the processed image
+			if st.session_state.processed_image:
+				buffer = BytesIO()
+				_, file_extension = os.path.splitext(filename.name)
+				file_extension = file_extension.lstrip(".")
+				st.session_state.processed_image.save(buffer, format="JPEG")
+				buffer.seek(0)
+
+				st.download_button(
+					label="Download Image",
+					data=buffer,
+					file_name=filename.name,
+					mime="image/" + file_extension,
+				)
 		else:	
 			st.warning("Please upload two valid images to start editing.")
 
@@ -403,7 +423,7 @@ elif menu == "Advanced ML":
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
 				file_extension = file_extension.lstrip(".")
-				st.session_state.processed_image.save(buffer, format="PNG")
+				st.session_state.processed_image.save(buffer, format="JPEG")
 				buffer.seek(0)
 
 				st.download_button(
