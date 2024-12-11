@@ -5,7 +5,6 @@ import os
 import numpy as np
 from io import BytesIO
 from image import MyImage
-from sift import sift
 import cv2
 import matplotlib
 
@@ -53,14 +52,12 @@ def adjust_contrast(image, factor):
 
 if menu == "Edit image":
 	st.title("Upload an image")
-	if not st.session_state.file_uploaded:
-		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
-		if filename:
-			st.session_state.file_uploaded = True
-			st.success("File uploaded successfully!")
-	else:
+	if st.session_state.file_uploaded:
 		reset_uploader()
+	filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
 	if filename:
+		st.session_state.file_uploaded = True
+		st.success("File uploaded successfully!")
 		pil_image = Image.open(filename)
 		st.image(pil_image, caption="Uploaded Image")
 		st.session_state.original_image = pil_image
@@ -320,6 +317,7 @@ elif menu == "Advanced ML":
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
 
+			myImage = Image(file_path1)
 			pil_image2 = Image.open(filename2)
 			st.image(pil_image2, caption="Uploaded Image 2")
 			st.session_state.second_image = pil_image2
@@ -334,7 +332,7 @@ elif menu == "Advanced ML":
 
 			st.session_state.processed_image = None
 			nr_matches = st.slider("Number of matches", 0, 100, step=1)
-			sift(file_path1, file_path2, nr_matches, "sift_result.jpeg")
+			myImage.sift(file_path1, file_path2, nr_matches, "sift_result.jpeg")
 			result = Image.open("sift_result.jpeg")
 			st.image(result, caption="SIFT image (auto-save)")
 		else:
@@ -361,6 +359,7 @@ elif menu == "Advanced ML":
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
 
+			myImage = MyImage(file_path1)
 			pil_image2 = Image.open(filename2)
 			st.image(pil_image2, caption="Uploaded Image 2")
 			st.session_state.second_image = pil_image2
@@ -378,13 +377,95 @@ elif menu == "Advanced ML":
 			st.warning("Please upload two valid images to start editing.")
 
 	elif st.session_state.active_section == "palm":
+		st.title("Upload an image")
+		if st.session_state.file_uploaded:
+			reset_uploader()
+		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
+		if filename:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+			pil_image = Image.open(filename)
+			st.image(pil_image, caption="Uploaded Image")
+			st.session_state.original_image = pil_image
 
-		# Reset the processed image for new operation
-		st.session_state.processed_image = None
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path = os.path.join(save_dir, filename.name)
+			with open(file_path, "wb") as f:
+				f.write(filename.getbuffer())
+
+			myImage = MyImage(file_path)
+
+			st.session_state.processed_image = None
+			myImage.find_palm_lines(file_path, "palm_lines.jpeg")
+			result = Image.open("palm_lines.jpeg")
+			st.image(result, caption="Palm lines image (auto-save)")
+			st.session_state.processed_image = result
+
+		# Provide a download button for the processed image
+		if st.session_state.processed_image:
+			buffer = BytesIO()
+			_, file_extension = os.path.splitext(filename.name)
+			file_extension = file_extension.lstrip(".")
+			st.session_state.processed_image.save(buffer, format="PNG")
+			buffer.seek(0)
+
+			st.download_button(
+				label="Download Image",
+				data=buffer,
+				file_name=filename.name,
+				mime="image/" + file_extension,
+			)
+		else:
+			st.warning("Please upload an image to start editing.")
+			st.stop()
 	elif st.session_state.active_section == "detect faces":
+		st.title("Upload an image")
+		if st.session_state.file_uploaded:
+			reset_uploader()
+		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
+		if filename:
+			st.session_state.file_uploaded = True
+			st.success("File uploaded successfully!")
+			pil_image = Image.open(filename)
+			st.image(pil_image, caption="Uploaded Image")
+			st.session_state.original_image = pil_image
 
-		# Reset the processed image for new operation
-		st.session_state.processed_image = None
+			save_dir = "uploads"
+			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+			# Save the file
+			file_path = os.path.join(save_dir, filename.name)
+			with open(file_path, "wb") as f:
+				f.write(filename.getbuffer())
+
+			myImage = MyImage(file_path)
+
+			st.session_state.processed_image = None
+			myImage.detect_face(file_path, "detect_faces.jpeg")
+			result = Image.open("detect_faces.jpeg")
+			st.image(result, caption="Detect faces image (auto-save)")
+			st.session_state.processed_image = result
+
+		# Provide a download button for the processed image
+		if st.session_state.processed_image:
+			buffer = BytesIO()
+			_, file_extension = os.path.splitext(filename.name)
+			file_extension = file_extension.lstrip(".")
+			st.session_state.processed_image.save(buffer, format="PNG")
+			buffer.seek(0)
+
+			st.download_button(
+				label="Download Image",
+				data=buffer,
+				file_name=filename.name,
+				mime="image/" + file_extension,
+			)
+		else:
+			st.warning("Please upload an image to start editing.")
+			st.stop()
 
 elif menu == "Blend":
 	st.title("Blend two images")
