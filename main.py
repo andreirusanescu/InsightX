@@ -48,7 +48,12 @@ def main():
 
 		elif command == "APPLY":
 			filter_type = input("Enter filter (BLUR, MEDIAN_BLUR, SHARPEN, EDGE): ").strip().upper()
-			image.apply_filter(filter_type)
+			if filter_type == "BLUR" or filter_type == "MEDIAN_BLUR":
+				kernel_size = int(input("Enter kernel size: "))
+				sigmaX = float(input("Enter standard deviation for X: "))
+				image.apply_filter(filter_type, kernel_size=kernel_size, sigmaX=sigmaX)
+			else:
+				image.apply_filter(filter_type)
 		
 		elif command == "GRAYSCALE":
 			image.gray_scale()

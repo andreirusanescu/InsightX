@@ -195,7 +195,7 @@ if menu == "Edit image":
             if st.session_state.operation_type == "blur":
                 kernel_size = st.slider("Kernel size", 1, 50, step=2)
                 sigmaX = st.slider("Standard deviation for X", 1, 50, step=2)
-                result = myImage.apply_filter("BLUR", kernel_size, sigmaX)
+                result = myImage.apply_filter("BLUR", kernel_size=kernel_size, sigmaX=sigmaX)
                 if len(result.shape) == 3:
                     cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
                 else:
@@ -206,7 +206,7 @@ if menu == "Edit image":
                 st.session_state.processed_image = filtered_image
             if st.session_state.operation_type == "median blur":
                 kernel_size = st.slider("Kernel size", 1, 50, step=2)
-                result = myImage.apply_filter("MEDIAN BLUR", kernel_size, 0)
+                result = myImage.apply_filter("MEDIAN BLUR", kernel_size=kernel_size)
                 if len(result.shape) == 3:
                     cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
                 else:
