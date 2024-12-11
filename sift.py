@@ -1,8 +1,9 @@
+import matplotlib.pyplot as plt
+import cv2
 import os
+
 # Ensures no GUI required for Qt, may cause errors
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-import cv2
-import matplotlib.pyplot as plt
 
 def extract_sift_features(img):
 	""" Extracts SIFT features from the given image """
@@ -12,21 +13,22 @@ def extract_sift_features(img):
 	return key_points, descriptors
 
 def showing_sift_features(img1, img2, key_points):
-	""" Draws the keypoints present in the image """
-	img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)  # Convert to RGB for display
+	"""
+	Draws the keypoints present in the image
+	:param key_points: key points between :param img1: and :param img2:
+	"""
+	# Convert to RGB for display
+	img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
 	plt.imshow(cv2.drawKeypoints(img1_rgb, key_points, img2.copy()))
 
-def sift(filename1, filename2, nr_matches, out_filename):
-	# x = input("Enter First Image Name: ").strip()
-	# image1 = cv2.imread(x)
-	# if image1 is None:
-	# 	raise FileNotFoundError(f"Image '{x}' not found.")
-
-	# y = input("Enter Second Image Name: ").strip()
-	# image2 = cv2.imread(y)
-	# if image2 is None:
-	# 	raise FileNotFoundError(f"Image '{y}' not found.")
-
+def sift(filename1, filename2, out_filename, nr_matches=100):
+	"""
+	SIFT algorithm
+	:param filename1: filename of the first image
+	:param filename2: filename of the second image 
+	:param out_filename: output filename
+	The algorithm will show the first :param nr_matches:
+	"""
 	image1 = cv2.imread(filename1)
 	image2 = cv2.imread(filename2)
 
@@ -48,11 +50,10 @@ def sift(filename1, filename2, nr_matches, out_filename):
 
 	showing_sift_features(image1_gray, image1, image1_key_points)
 
-	""" Match descriptors using the norm.
-		This could be problematic because it finds the most common pixels,
-		even if the images are completely different (could be the corners/borders)
-		that are similar.
-		Find distance between key points using the Manhattan distance (i.e. norm).
+	""" Match descriptors using the norm. This could be problematic because
+		it finds the most common pixels, even if the images are completely
+		different (could be the corners/borders that are similar).
+		Find distance between key points using the Manhattan distance (i.e. norm)
 	"""
 	bruteForce = cv2.BFMatcher(cv2.NORM_L2)
 
@@ -70,7 +71,7 @@ def sift(filename1, filename2, nr_matches, out_filename):
 
 	plt.figure(figsize=(30, 15))
 	plt.imshow(matched_img_rgb)
-	# out_filename = input("Enter output filename: ").strip()
+	plt.axis('off')
 	plt.savefig(out_filename)
 
 def attach_sift_to_image(image_class):

@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import cv2
 import os
-import matplotlib.pyplot as plt
 
 # Ensures no GUI is required for Qt
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
@@ -8,7 +8,6 @@ os.environ['QT_QPA_PLATFORM'] = 'offscreen'
 def find_palm_lines(self):
 	filename = input("Enter palm filename: ").strip()
 	image = cv2.imread(filename=filename)
-	
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	edges = cv2.Canny(gray, 40, 55, apertureSize=3)
 	edges = cv2.bitwise_not(edges)

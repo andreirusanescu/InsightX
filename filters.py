@@ -1,25 +1,31 @@
 import numpy as np
 import cv2
 
-def apply_filter(self, filterType, kernel_size=1, sigmaX=0.0, intensity=1.0, denoise_strength=10):
-	""" Apply a filter to the image (blur, median_blur, edge, sharpen, etc.) """
+def apply_filter(self, filter_type, kernel_size=1, sigmaX=0.0, intensity=1.0, denoise_strength=10):
+	"""
+	Apply a filter to the image (blur, median_blur, edge, sharpen, etc.)
+	:param filter_type: the applied filter
+	:param kernel_size: the kernel size (int)
+	:param sigmaX: standard deviation on the X axis (float)
+	:param intensity: the intensity applied for sharpen (0.0 - 3.0)
+	:param denoise_strength: (0.0 - 30.0)
+	"""
 	result = None
 	if self.image is not None:
-		if filterType == "BLUR":
+		if filter_type == "BLUR":
 			""" the bigger the kernel size, the blurrier the image
 				the bigger sigmaX, the blurrier the image """
-			
 			result = cv2.GaussianBlur(self.image, ksize=(kernel_size, kernel_size), sigmaX=sigmaX)
-		elif filterType == "MEDIAN BLUR":
+		elif filter_type == "MEDIAN BLUR":
 			result = cv2.medianBlur(self.image, ksize=kernel_size)
-		elif filterType == "SHARPEN":
+		elif filter_type == "SHARPEN":
 			intensity = max(0, intensity)
 			center_value = 9 + intensity
 			sharpen_kernel = np.array([[-1, -1, -1], [-1, center_value, -1], [-1, -1, -1]])
 			sharpen = cv2.filter2D(self.image, -1, sharpen_kernel)
 			deblurred = cv2.fastNlMeansDenoisingColored(sharpen, None, denoise_strength, denoise_strength, 7, 21)
 			result = deblurred
-		elif filterType == "EDGE":
+		elif filter_type == "EDGE":
 			""" First threshold filters the noise,
 				second threshold selects the clear edges.
 				The gradient is computed for each pixel, using Hysteresis
@@ -36,7 +42,7 @@ def gray_scale(self):
 	return result
 
 def equalize(self):
-	""" Equalize the image using OpenCV's histogram equalization. """
+	""" Equalize the image using OpenCV's histogram equalization """
 	result = None
 	if self.image is not None:
 		# Grayscale image
@@ -56,7 +62,7 @@ def equalize(self):
 
 
 def pad_kernel(kernel, target_shape):
-	"""Pad the kernel to match the target shape."""
+	"""Pad the kernel to match the target shape """
 	padded = np.zeros(target_shape, dtype=kernel.dtype)
 	kh, kw = kernel.shape
 	th, tw = target_shape
@@ -70,7 +76,7 @@ def pad_kernel(kernel, target_shape):
 	return padded
 
 def pad_kernel(kernel, target_shape):
-	"""Pad the kernel to match the target shape."""
+	"""Pad the kernel to match the target shape """
 	padded = np.zeros(target_shape, dtype=kernel.dtype)
 	kh, kw = kernel.shape
 	th, tw = target_shape
@@ -79,10 +85,13 @@ def pad_kernel(kernel, target_shape):
 	start_y = (th - kh) // 2
 	start_x = (tw - kw) // 2
 	padded[start_y:start_y + kh, start_x:start_x + kw] = kernel
-	padded = np.fft.ifftshift(padded)  # Shift kernel center for frequency domain alignment
+
+	# Shift kernel center for frequency domain alignment
+	padded = np.fft.ifftshift(padded)
 	return padded
 
 def wiener_deconvolution(self, K=0.01):
+	""" Wiener deconvolution - unblurring algorithm """
 	if len(self.image.shape) == 3:
 		target_shape = self.image.shape[:2]
 	else:
@@ -118,6 +127,7 @@ def wiener_deconvolution(self, K=0.01):
 	return np.clip(np.round(deconvolved), 0, 255).astype(np.uint8)
 
 def attach_filters_to_image(image_class):
+	""" Monkey patching helper function """
 	image_class.apply_filter = apply_filter
 	image_class.gray_scale = gray_scale
 	image_class.equalize = equalize

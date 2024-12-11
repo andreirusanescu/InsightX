@@ -1,3 +1,4 @@
+import cv2
 import sys
 from image import MyImage
 
@@ -13,13 +14,11 @@ def main():
 		print("\nAvailable commands:")
 		print("ADJUST commands: CROP, ROTATE, FLIP, RESIZE, BRIGHTNESS, CONTRAST")
 		print("FILTER commands: APPLY, GRAYSCALE, EQUALIZE, UNBLUR")
+		print("ADVANCED: BLEND, PALM, SIFT, RANSAC, DETECT_FACES, RECOGNIZE_FACES")
 		print("UTILS commands: SHOW, SAVE, EXIT")
-		print("ADVANCED: BLEND, SIFT, PALM, DETECT_FACES, RECOGNIZE_FACES")
 
-		# TODO add the other commands 
 		command = input("Enter command: ").strip().upper()
 
-		# TODO ADD SEPARATING MENU FOR ADJUSTING, FILTERS AND THE OTHERS
 		if command == "CROP":
 			x1, y1, x2, y2 = map(int, input("Enter coordinates (x1, y1, x2, y2): ").split())
 			image.crop(x1, y1, x2, y2)
@@ -68,15 +67,29 @@ def main():
 			image.unblur()
 
 		# Machine-Learning algorithms
-		# SIFT (scale (zoom in/out), rotation, illumination, perspective)
+
 		elif command == "BLEND":
 			image.blend()
 
 		elif command == "SIFT":
-			image.sift()
+			x = input("Enter First Image Name: ").strip()
+			image1 = cv2.imread(x)
+			if image1 is None:
+				raise FileNotFoundError(f"Image '{x}' not found")
+
+			y = input("Enter Second Image Name: ").strip()
+			image2 = cv2.imread(y)
+			if image2 is None:
+				raise FileNotFoundError(f"Image '{y}' not found")
+
+			out_filename = input("Enter output filename: ").strip()
+			image.sift(filename1=x, filename2=y, out_filename=out_filename)
 
 		elif command == "RANSAC":
-			image.ransac()
+			img_source = cv2.imread("test1.png")
+			img_target = cv2.imread("test2.png")
+			output_file = input("Enter output filename: ").strip()
+			image.ransac(img1=img_source, img2=img_target, output_file=output_file)
 
 		elif command == "PALM":
 			image.find_palm_lines()
@@ -85,7 +98,6 @@ def main():
 			image.detect_face()
 
 		elif command == "RECOGNIZE_FACES":
-			# folderpath = input("Enter folder path: ").strip
 			image.recognize_faces()
 
 		# UTILS:
