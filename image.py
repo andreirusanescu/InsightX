@@ -5,6 +5,7 @@ from filters import attach_filters_to_image
 from adjust import attach_adjust_to_image
 from sift import attach_sift_to_image
 from palm import attach_palm_to_image
+from ransac import attach_ransac_to_image
 from detect_faces import attach_face_to_image
 
 class MyImage:
@@ -63,10 +64,6 @@ class MyImage:
 		if len(self.image.shape) != len(image2.shape):
 			image2 = cv2.cvtColor(image2, cv2.COLOR_GRAY2BGR)
 
-		# Making sure they are the same type
-		# self.image = self.image.astype('float32')
-		# image2 = image2.astype('float32')
-
 		result = cv2.addWeighted(self.image, alpha, image2, beta, 0.0)
 		print(f"Blended the two images")
 		return result
@@ -75,5 +72,6 @@ attach_utils_to_image(MyImage)
 attach_filters_to_image(MyImage)
 attach_adjust_to_image(MyImage)
 attach_sift_to_image(MyImage)
+attach_ransac_to_image(MyImage)
 attach_palm_to_image(MyImage)
 attach_face_to_image(MyImage)

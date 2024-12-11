@@ -25,7 +25,7 @@ def detect_face_rect(self, filename, out_filename):
 	
 	plt.savefig(out_filename)
 	print(f"Output saved to '{out_filename}'")
-
+  
 ''' Detects face and returns the face and its coordinates '''
 def detect_face_coord(self, filename):
 	# filename = input("Enter the filename: ").strip()
