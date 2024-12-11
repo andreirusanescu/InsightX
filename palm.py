@@ -10,7 +10,7 @@ def find_palm_lines(self, filename, out_filename):
 	image = cv2.imread(filename=filename)
 	
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	edges = cv2.Canny(gray, 40, 55, apertureSize=3)
+	edges = cv2.Canny(gray, 30, 45, apertureSize=3)
 	edges = cv2.bitwise_not(edges)
 	
 	# Convert image color so it can be merged with the original image

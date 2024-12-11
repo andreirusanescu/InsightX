@@ -340,8 +340,6 @@ elif menu == "Advanced ML":
 		
 	elif st.session_state.active_section == "ransac":
 		st.write("### Upload two images")
-		if st.session_state.file_uploaded:
-			reset_uploader()
 		filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
 		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
 		if filename and filename2:
@@ -371,15 +369,11 @@ elif menu == "Advanced ML":
 			file_path2 = os.path.join(save_dir, filename2.name)
 			with open(file_path2, "wb") as f:
 				f.write(filename2.getbuffer())
-
-			st.session_state.processed_image = None
 		else:	
 			st.warning("Please upload two valid images to start editing.")
 
 	elif st.session_state.active_section == "palm":
-		st.title("Upload an image")
-		if st.session_state.file_uploaded:
-			reset_uploader()
+		st.write("Upload a photo")
 		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
 		if filename:
 			st.session_state.file_uploaded = True
@@ -404,120 +398,12 @@ elif menu == "Advanced ML":
 			st.image(result, caption="Palm lines image (auto-save)")
 			st.session_state.processed_image = result
 
-		# Provide a download button for the processed image
-		if st.session_state.processed_image:
-			buffer = BytesIO()
-			_, file_extension = os.path.splitext(filename.name)
-			file_extension = file_extension.lstrip(".")
-			st.session_state.processed_image.save(buffer, format="PNG")
-			buffer.seek(0)
-
-			st.download_button(
-				label="Download Image",
-				data=buffer,
-				file_name=filename.name,
-				mime="image/" + file_extension,
-			)
-		else:
-			st.warning("Please upload an image to start editing.")
-			st.stop()
-	elif st.session_state.active_section == "detect faces":
-		st.title("Upload an image")
-		if st.session_state.file_uploaded:
-			reset_uploader()
-		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
-		if filename:
-			st.session_state.file_uploaded = True
-			st.success("File uploaded successfully!")
-			pil_image = Image.open(filename)
-			st.image(pil_image, caption="Uploaded Image")
-			st.session_state.original_image = pil_image
-
-			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
-
-			# Save the file
-			file_path = os.path.join(save_dir, filename.name)
-			with open(file_path, "wb") as f:
-				f.write(filename.getbuffer())
-
-			myImage = MyImage(file_path)
-
-			st.session_state.processed_image = None
-			myImage.detect_face(file_path, "detect_faces.jpeg")
-			result = Image.open("detect_faces.jpeg")
-			st.image(result, caption="Detect faces image (auto-save)")
-			st.session_state.processed_image = result
-
-		# Provide a download button for the processed image
-		if st.session_state.processed_image:
-			buffer = BytesIO()
-			_, file_extension = os.path.splitext(filename.name)
-			file_extension = file_extension.lstrip(".")
-			st.session_state.processed_image.save(buffer, format="PNG")
-			buffer.seek(0)
-
-			st.download_button(
-				label="Download Image",
-				data=buffer,
-				file_name=filename.name,
-				mime="image/" + file_extension,
-			)
-		else:
-			st.warning("Please upload an image to start editing.")
-			st.stop()
-
-elif menu == "Blend":
-	st.title("Blend two images")
-	st.write("### Upload two images")
-	if not st.session_state.file_uploaded:
-		filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
-		filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
-		if filename and filename2:
-			st.session_state.file_uploaded = True
-			st.success("File uploaded successfully!")
-			pil_image1 = Image.open(filename)
-			st.image(pil_image1, caption="Uploaded Image 1")
-			st.session_state.original_image = pil_image1
-
-			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
-
-			# Save the file
-			file_path = os.path.join(save_dir, filename.name)
-			with open(file_path, "wb") as f:
-				f.write(filename.getbuffer())
-
-			myImage1 = MyImage(file_path)
-
-			pil_image2 = Image.open(filename2)
-			st.image(pil_image2, caption="Uploaded Image 2")
-			st.session_state.second_image = pil_image2
-
-			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
-
-			# Save the file
-			file_path = os.path.join(save_dir, filename2.name)
-			with open(file_path, "wb") as f:
-				f.write(filename2.getbuffer())
-
-			st.session_state.processed_image = None
-			alpha = st.slider("Alpha", 0.0, 1.0, value=0.5, step=0.1)
-			if not (0.0 < alpha < 1.0) or round(alpha + 1.0 - alpha, 5) != 1.0:
-				st.warning("Alpha should be strictly between 0.0 and 1.0.")
-			else:
-				result = myImage1.blend(file_path, alpha, 1.0 - alpha)
-				result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-				blend_image = Image.fromarray(result_rgb)
-				st.image(blend_image, use_container_width=True)
-
-				st.session_state.processed_image = blend_image
+			# Provide a download button for the processed image
 			if st.session_state.processed_image:
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
 				file_extension = file_extension.lstrip(".")
-				st.session_state.processed_image.save(buffer, format="JPEG")
+				st.session_state.processed_image.save(buffer, format="PNG")
 				buffer.seek(0)
 
 				st.download_button(
@@ -526,8 +412,137 @@ elif menu == "Blend":
 					file_name=filename.name,
 					mime="image/" + file_extension,
 				)
+		else:
+			st.warning("Please upload an image to start editing.")
+			st.stop()
+	elif st.session_state.active_section == "detect faces":
+		st.title("Instructions for proper face detection")
+		st.write("### Upload multiple images of the same person. These will be used for training.")
+		st.write("### Then, upload a single image. The algorithm will check if this person is the same as the people you entered.")
+		name = st.text_area("Enter the name of the person below:", 
+							value="",
+							placeholder="Type something...",
+							height=80)
+
+		if name:
+			uploaded_files = st.file_uploader("Upload multiple image files",
+										type=[ "jpeg", "png"], 
+										accept_multiple_files=True)
+			if uploaded_files:
+				save_directory = name
+				if not os.path.exists(save_directory):
+					os.makedirs(save_directory)
+
+				for uploaded_file in uploaded_files:
+					save_path = os.path.join(save_directory, uploaded_file.name)
+					with open(save_path, "wb") as f:
+						f.write(uploaded_file.getbuffer())
+				st.success("All files processed and saved!")
+				filename = st.file_uploader("Upload a file", type=["png", "jpeg"])
+				if filename:
+					st.session_state.file_uploaded = True
+					pil_image = Image.open(filename)
+					st.image(pil_image, caption="Uploaded Image")
+					st.session_state.original_image = pil_image
+
+					save_dir = "uploads"
+					os.makedirs(save_dir, exist_ok=True)
+
+					file_path = os.path.join(save_dir, filename.name)
+					with open(file_path, "wb") as f:
+						f.write(filename.getbuffer())
+
+					myImage = MyImage(file_path)
+
+					st.session_state.processed_image = None
+					result = myImage.detect_face(save_directory, filename.name, file_path)
+					if result is None:
+						st.write("### No known faces detected in this photo")
+					else:
+						cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+						detect_image = Image.fromarray(cv2_image_rgb)
+						st.image(detect_image, caption="Detect faces image (auto-save)")
+						st.session_state.processed_image = detect_image
+
+					# Provide a download button for the processed image
+					if st.session_state.processed_image:
+						buffer = BytesIO()
+						_, file_extension = os.path.splitext(filename.name)
+						file_extension = file_extension.lstrip(".")
+						st.session_state.processed_image.save(buffer, format="PNG")
+						buffer.seek(0)
+
+						st.download_button(
+							label="Download Image",
+							data=buffer,
+							file_name=filename.name,
+							mime="image/" + file_extension,
+						)
+				else:
+					st.warning("Please upload an image to start.")
+					st.stop()
+			else:
+				st.write("No files uploaded yet.")
+
+elif menu == "Blend":
+	st.title("Blend two images")
+	st.write("### Upload two images")
+	filename = st.file_uploader("Upload image 1", type=["jpeg", "png"])
+	filename2 = st.file_uploader("Upload image 2", type=["jpeg", "png"])
+	if filename and filename2:
+		st.session_state.file_uploaded = True
+		st.success("File uploaded successfully!")
+		pil_image1 = Image.open(filename)
+		st.image(pil_image1, caption="Uploaded Image 1")
+		st.session_state.original_image = pil_image1
+
+		save_dir = "uploads"
+		os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+		# Save the file
+		file_path = os.path.join(save_dir, filename.name)
+		with open(file_path, "wb") as f:
+			f.write(filename.getbuffer())
+
+		myImage1 = MyImage(file_path)
+
+		pil_image2 = Image.open(filename2)
+		st.image(pil_image2, caption="Uploaded Image 2")
+		st.session_state.second_image = pil_image2
+
+		save_dir = "uploads"
+		os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+		# Save the file
+		file_path = os.path.join(save_dir, filename2.name)
+		with open(file_path, "wb") as f:
+			f.write(filename2.getbuffer())
+
+		st.session_state.processed_image = None
+		alpha = st.slider("Alpha", 0.0, 1.0, value=0.5, step=0.1)
+		if not (0.0 < alpha < 1.0) or round(alpha + 1.0 - alpha, 5) != 1.0:
+			st.warning("Alpha should be strictly between 0.0 and 1.0.")
+		else:
+			result = myImage1.blend(file_path, alpha, 1.0 - alpha)
+			result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+			blend_image = Image.fromarray(result_rgb)
+			st.image(blend_image, use_container_width=True)
+
+			st.session_state.processed_image = blend_image
+		if st.session_state.processed_image:
+			buffer = BytesIO()
+			_, file_extension = os.path.splitext(filename.name)
+			file_extension = file_extension.lstrip(".")
+			st.session_state.processed_image.save(buffer, format="JPEG")
+			buffer.seek(0)
+
+			st.download_button(
+				label="Download Image",
+				data=buffer,
+				file_name=filename.name,
+				mime="image/" + file_extension,
+			)
 	else:
-		reset_uploader()
 		st.warning("Please upload two valid images to start editing.")
 		st.stop()
 
