@@ -8,7 +8,7 @@ from image import MyImage
 import cv2
 import matplotlib
 
-# Menu and state management
+''' Menu and state management '''
 menu = st.sidebar.selectbox("Menu", ["Edit image", "Advanced ML", "Blend"])
 
 if "active_section" not in st.session_state:
@@ -29,7 +29,7 @@ def switch_section(section_name):
 def reset_uploader():
     st.session_state.file_uploaded = False
 
-# Utility functions
+''' Adjust functions '''
 def rotate_image(image, angle):
 	return image.rotate(angle, expand=True)
 
@@ -54,7 +54,7 @@ if menu == "Edit image":
 	st.title("Upload an image")
 	if st.session_state.file_uploaded:
 		reset_uploader()
-	filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
+	filename = st.file_uploader("Upload a file", type=["png", "jpeg"])
 	if filename:
 		st.session_state.file_uploaded = True
 		st.success("File uploaded successfully!")
@@ -63,14 +63,13 @@ if menu == "Edit image":
 		st.session_state.original_image = pil_image
 
 		save_dir = "uploads"
-		os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+		os.makedirs(save_dir, exist_ok=True)
 
-		# Save the file
+		''' Save the file locally to easily be uploaded as MyImage instance '''
 		file_path = os.path.join(save_dir, filename.name)
 		with open(file_path, "wb") as f:
 			f.write(filename.getbuffer())
 
-		# Get the absolute path
 		absolute_path = os.path.abspath(file_path)
 		myImage = MyImage(file_path)
 	else:
@@ -101,7 +100,7 @@ if menu == "Edit image":
 		elif col6.button("Contrast"):
 			st.session_state.operation = "contrast"
 
-		# Reset the processed image for new operation
+		''' Reset the processed image for new operation '''
 		st.session_state.processed_image = None
 
 		if st.session_state.operation == "crop":
@@ -161,12 +160,12 @@ if menu == "Edit image":
 			if st.button("Apply Contrast"):
 				st.session_state.processed_image = contrasted_image
 
-		# Provide a download button for the processed image
+		''' Provide a download button for the processed image '''
 		if st.session_state.processed_image:
 			buffer = BytesIO()
 			_, file_extension = os.path.splitext(filename.name)
 			file_extension = file_extension.lstrip(".")
-			st.session_state.processed_image.save(buffer, format="PNG")
+			st.session_state.processed_image.save(buffer, format=file_extension.upper())
 			buffer.seek(0)
 
 			st.download_button(
@@ -246,8 +245,9 @@ if menu == "Edit image":
 				st.session_state.processed_image = filtered_image
 		elif st.session_state.operation == "grayscale":
 			result = myImage.gray_scale()
+			''' To revent channel-related conversion errors '''
 			if len(result.shape) == 3:
-					cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+				cv2_image_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
 			else:
 				cv2_image_rgb = result
 			grayscale_image = Image.fromarray(cv2_image_rgb)
@@ -284,7 +284,7 @@ if menu == "Edit image":
 			)
 elif menu == "Advanced ML":
 	st.title("Advanced Machine Learning Algorithms")
-	st.write("Choose an algorithm form the list:")
+	st.write("Choose an algorithm from the list:")
 	col1, col2, col3, col4 = st.columns(4)
 
 	if col1.button("SIFT"):
@@ -310,9 +310,8 @@ elif menu == "Advanced ML":
 			st.session_state.original_image = pil_image1
 
 			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+			os.makedirs(save_dir, exist_ok=True)
 
-			# Save the file
 			file_path1 = os.path.join(save_dir, filename.name)
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
@@ -323,9 +322,8 @@ elif menu == "Advanced ML":
 			st.session_state.second_image = pil_image2
 
 			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+			os.makedirs(save_dir, exist_ok=True)
 
-			# Save the file
 			file_path2 = os.path.join(save_dir, filename2.name)
 			with open(file_path2, "wb") as f:
 				f.write(filename2.getbuffer())
@@ -349,9 +347,8 @@ elif menu == "Advanced ML":
 			st.session_state.original_image = pil_image1
 
 			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+			os.makedirs(save_dir, exist_ok=True)
 
-			# Save the file
 			file_path1 = os.path.join(save_dir, filename.name)
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
@@ -362,9 +359,8 @@ elif menu == "Advanced ML":
 			st.session_state.second_image = pil_image2
 
 			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+			os.makedirs(save_dir, exist_ok=True)
 
-			# Save the file
 			file_path2 = os.path.join(save_dir, filename2.name)
 			with open(file_path2, "wb") as f:
 				f.write(filename2.getbuffer())
@@ -377,7 +373,6 @@ elif menu == "Advanced ML":
 			st.image(result, caption="Ransac image (auto-save)")
 			st.session_state.processed_image = result
 
-			# Provide a download button for the processed image
 			if st.session_state.processed_image:
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
@@ -405,9 +400,8 @@ elif menu == "Advanced ML":
 			st.session_state.original_image = pil_image
 
 			save_dir = "uploads"
-			os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+			os.makedirs(save_dir, exist_ok=True)
 
-			# Save the file
 			file_path = os.path.join(save_dir, filename.name)
 			with open(file_path, "wb") as f:
 				f.write(filename.getbuffer())
@@ -420,7 +414,6 @@ elif menu == "Advanced ML":
 			st.image(result, caption="Palm lines image (auto-save)")
 			st.session_state.processed_image = result
 
-			# Provide a download button for the processed image
 			if st.session_state.processed_image:
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
@@ -438,6 +431,7 @@ elif menu == "Advanced ML":
 			st.warning("Please upload an image to start editing.")
 			st.stop()
 	elif st.session_state.active_section == "detect faces":
+		''' Algorithm predisposed to errors if the database is small '''
 		st.title("Instructions for proper face detection")
 		st.write("### Upload multiple images of the same person. These will be used for training.")
 		st.write("### Then, upload a single image. The algorithm will check if this person is the same as the people you entered.")
@@ -452,6 +446,7 @@ elif menu == "Advanced ML":
 										accept_multiple_files=True)
 			if uploaded_files:
 				save_directory = name
+				''' Creates a separate directory of all the uploaded files '''
 				if not os.path.exists(save_directory):
 					os.makedirs(save_directory)
 
@@ -486,7 +481,6 @@ elif menu == "Advanced ML":
 						st.image(detect_image, caption="Detect faces image (auto-save)")
 						st.session_state.processed_image = detect_image
 
-					# Provide a download button for the processed image
 					if st.session_state.processed_image:
 						buffer = BytesIO()
 						_, file_extension = os.path.splitext(filename.name)
@@ -519,9 +513,8 @@ elif menu == "Blend":
 		st.session_state.original_image = pil_image1
 
 		save_dir = "uploads"
-		os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+		os.makedirs(save_dir, exist_ok=True)
 
-		# Save the file
 		file_path = os.path.join(save_dir, filename.name)
 		with open(file_path, "wb") as f:
 			f.write(filename.getbuffer())
@@ -533,9 +526,8 @@ elif menu == "Blend":
 		st.session_state.second_image = pil_image2
 
 		save_dir = "uploads"
-		os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+		os.makedirs(save_dir, exist_ok=True)
 
-		# Save the file
 		file_path = os.path.join(save_dir, filename2.name)
 		with open(file_path, "wb") as f:
 			f.write(filename2.getbuffer())
