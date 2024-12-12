@@ -39,7 +39,7 @@ def detect_face_coord(self, filename):
 	return gray_img[y:y+w, x:+h], faces[0]
 
 ''' We need to recognize which face belongs to whom.
-	We provide multiple folders, each containing pictures of a different person.
+	We provide a folder, containing pictures of the same person.
 	We first prepare the training data by storing the faces and their coordinates.
 	Then we begin training the model using face coordinates and labels.
 	For GUI simplicity, it is implemented to support only one face and one directory

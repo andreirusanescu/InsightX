@@ -16,7 +16,7 @@ if "active_section" not in st.session_state:
 if "operation" not in st.session_state:
 	st.session_state.operation = None
 if "processed_image" not in st.session_state:
-	# To store results of each operation
+	'''To store results of each operation'''
 	st.session_state.processed_image = None
 if "operation_type" not in st.session_state:
 	st.session_state.operation_type = None
@@ -273,7 +273,7 @@ if menu == "Edit image":
 			buffer = BytesIO()
 			_, file_extension = os.path.splitext(filename.name)
 			file_extension = file_extension.lstrip(".")
-			st.session_state.processed_image.save(buffer, format="PNG")
+			st.session_state.processed_image.save(buffer, format=file_extension.upper())
 			buffer.seek(0)
 
 			st.download_button(
@@ -391,7 +391,7 @@ elif menu == "Advanced ML":
 
 	elif st.session_state.active_section == "palm":
 		st.write("Upload a photo")
-		filename = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg"])
+		filename = st.file_uploader("Upload a file", type=["png", "jpeg"])
 		if filename:
 			st.session_state.file_uploaded = True
 			st.success("File uploaded successfully!")
@@ -409,7 +409,9 @@ elif menu == "Advanced ML":
 			myImage = MyImage(file_path)
 
 			st.session_state.processed_image = None
-			myImage.find_palm_lines(file_path, "palm_lines.jpeg")
+			_, file_extension = os.path.splitext(filename.name)
+			file_extension = file_extension.lstrip(".")
+			myImage.find_palm_lines(file_path, "palm_lines." + file_extension)
 			result = Image.open("palm_lines.jpeg")
 			st.image(result, caption="Palm lines image (auto-save)")
 			st.session_state.processed_image = result
@@ -418,7 +420,7 @@ elif menu == "Advanced ML":
 				buffer = BytesIO()
 				_, file_extension = os.path.splitext(filename.name)
 				file_extension = file_extension.lstrip(".")
-				st.session_state.processed_image.save(buffer, format="JPEG")
+				st.session_state.processed_image.save(buffer, format=file_extension.upper())
 				buffer.seek(0)
 
 				st.download_button(
@@ -485,7 +487,7 @@ elif menu == "Advanced ML":
 						buffer = BytesIO()
 						_, file_extension = os.path.splitext(filename.name)
 						file_extension = file_extension.lstrip(".")
-						st.session_state.processed_image.save(buffer, format="PNG")
+						st.session_state.processed_image.save(buffer, format=file_extension.upper())
 						buffer.seek(0)
 
 						st.download_button(
