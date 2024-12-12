@@ -60,21 +60,6 @@ def equalize(self):
 			result = cv2.merge(equalized_channels)
 	return result
 
-
-def pad_kernel(kernel, target_shape):
-	"""Pad the kernel to match the target shape """
-	padded = np.zeros(target_shape, dtype=kernel.dtype)
-	kh, kw = kernel.shape
-	th, tw = target_shape
-
-	# Center-align the kernel within the padded array
-	start_y = (th - kh) // 2
-	start_x = (tw - kw) // 2
-	padded[start_y:start_y + kh, start_x:start_x + kw] = kernel
-	# Apply shift to center the kernel in the frequency domain
-	padded = np.fft.ifftshift(padded) 
-	return padded
-
 def pad_kernel(kernel, target_shape):
 	"""Pad the kernel to match the target shape """
 	padded = np.zeros(target_shape, dtype=kernel.dtype)

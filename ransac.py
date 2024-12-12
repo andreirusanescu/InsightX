@@ -75,7 +75,7 @@ def ransac(self, img1, img2, output_file):
 	
 	H = affine_matrix(keypoint_source, keypoint_target, pos)
 	rows, cols, _ = img2.shape
-	
+
 	warp = cv2.warpAffine(img1, H, (cols, rows))
 	merge = np.uint8(img2 * 0.5 + warp * 0.5)
 	
