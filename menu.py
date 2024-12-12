@@ -79,7 +79,7 @@ if menu == "Edit image":
 
 	st.write("### Select an Edit Option:")
 
-	col1, col2 = st.columns(3)
+	col1, col2 = st.columns(2)
 	if col1.button("Adjust"):
 		switch_section("Adjust")
 	if col2.button("Filter"):
@@ -317,7 +317,7 @@ elif menu == "Advanced ML":
 			with open(file_path1, "wb") as f:
 				f.write(filename.getbuffer())
 
-			myImage = Image(file_path1)
+			myImage = MyImage(file_path1)
 			pil_image2 = Image.open(filename2)
 			st.image(pil_image2, caption="Uploaded Image 2")
 			st.session_state.second_image = pil_image2
@@ -332,7 +332,7 @@ elif menu == "Advanced ML":
 
 			st.session_state.processed_image = None
 			nr_matches = st.slider("Number of matches", 0, 100, step=1)
-			myImage.sift(file_path1, file_path2, nr_matches, "sift_result.jpeg")
+			myImage.sift(file_path1, file_path2, "sift_result.jpeg", nr_matches=nr_matches)
 			result = Image.open("sift_result.jpeg")
 			st.image(result, caption="SIFT image (auto-save)")
 		else:
